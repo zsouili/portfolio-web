@@ -1,454 +1,354 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Zayd Souili - Software Engineer</title>
-<meta name="description" content="Zayd Souili - Etudiant en Ingenierie Logicielle at ESISA. Interactive 3D portfolio."/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#04050a;--purple:#7c3aed;--cyan:#06b6d4;--amber:#f59e0b;
-  --text:#e2e8f0;--dim:#64748b;--card:#0b0d14;--border:#1e2030;
-  --font:'Space Mono',monospace;
-}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;cursor:none}
-a{color:inherit;text-decoration:none}
-::selection{background:var(--purple);color:#fff}
-
-/* CURSOR */
-#cursor{position:fixed;width:8px;height:8px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:10001;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
-#cursorRing{position:fixed;width:36px;height:36px;border:1.5px solid var(--purple);border-radius:50%;pointer-events:none;z-index:10000;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .25s}
-#cursor.hover{width:14px;height:14px;background:var(--purple)}
-#cursorRing.hover{width:52px;height:52px;border-color:var(--cyan)}
-
-/* 3D CANVAS */
-#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 40px;display:flex;justify-content:space-between;align-items:center;transition:transform .4s,opacity .4s}
-nav.hidden{transform:translateY(-100%);opacity:0}
-.nav-logo{font-weight:700;font-size:1rem;color:var(--cyan);letter-spacing:-.5px}
-.nav-links{display:flex;gap:28px}
-.nav-links a{font-size:.75rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;transition:color .3s}
-.nav-links a:hover{color:var(--cyan)}
-
-/* SECTIONS */
-.section{position:relative;z-index:1;padding:120px 10vw}
-.section-label{font-size:.65rem;color:var(--purple);text-transform:uppercase;letter-spacing:.2em;margin-bottom:8px}
-.section-title{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:32px;line-height:1.2}
-
-/* REVEAL */
-.reveal{opacity:0;transform:translateY(40px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
-.reveal.vis{opacity:1;transform:none}
-.rd1{transition-delay:.1s}.rd2{transition-delay:.2s}.rd3{transition-delay:.3s}.rd4{transition-delay:.4s}
-
-/* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;padding:0 10vw}
-.hero-title{font-size:clamp(3rem,9vw,8rem);font-weight:700;line-height:.95;letter-spacing:-.04em}
-.hero-line1{color:#fff}
-.hero-line2{-webkit-text-stroke:2px var(--text);color:transparent}
-.hero-line3{background:linear-gradient(90deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:clamp(.75rem,1.2vw,.95rem);color:var(--dim);margin-top:24px;max-width:480px;line-height:1.7}
-.hero-cta{display:flex;gap:16px;margin-top:32px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:6px;font-family:var(--font);font-size:.78rem;font-weight:700;letter-spacing:.04em;transition:transform .25s,box-shadow .25s,background .25s;border:none;cursor:pointer}
-.btn:hover{transform:translateY(-2px)}
-.btn-primary{background:var(--purple);color:#fff;box-shadow:0 0 24px rgba(124,58,237,.3)}
-.btn-primary:hover{box-shadow:0 4px 32px rgba(124,58,237,.5)}
-.btn-outline{border:1.5px solid var(--purple);color:var(--purple);background:transparent}
-.btn-outline:hover{background:rgba(124,58,237,.1)}
-
-/* ABOUT */
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
-.about-text{font-size:.85rem;color:var(--dim);line-height:1.85}
-.about-text strong{color:var(--text)}
-.about-3d-wrap{position:relative;width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:rgba(11,13,20,.6)}
-#aboutCanvas{width:100%;height:100%;display:block;cursor:grab}
-#aboutCanvas:active{cursor:grabbing}
-.about-info{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
-.about-tag{font-size:.7rem;padding:6px 14px;border-radius:100px;border:1px solid var(--border);color:var(--dim);background:var(--card)}
-
-/* SKILLS */
-.skills-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-.skill-pill{font-size:.72rem;padding:8px 18px;border-radius:100px;border:1px solid var(--border);color:var(--dim);background:var(--card);transition:all .3s;cursor:default}
-.skill-pill:hover{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--purple),var(--cyan));box-shadow:0 0 20px rgba(124,58,237,.3);transform:translateY(-2px)}
-
-/* PROJECTS */
-.projects-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.project-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;position:relative;overflow:hidden;transition:transform .3s,border-color .3s}
-.project-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--cyan),var(--amber));transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.22,1,.36,1)}
-.project-card:hover{transform:translateY(-4px);border-color:var(--purple)}
-.project-card:hover::before{transform:scaleX(1)}
-.project-num{font-size:.6rem;color:var(--purple);letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
-.project-name{font-size:1.05rem;font-weight:700;margin-bottom:8px}
-.project-desc{font-size:.78rem;color:var(--dim);line-height:1.7;margin-bottom:16px}
-.project-stack{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-.project-stack span{font-size:.6rem;padding:3px 10px;border-radius:4px;background:rgba(124,58,237,.1);color:var(--purple);border:1px solid rgba(124,58,237,.15)}
-.project-links{display:flex;gap:12px}
-.project-links a{font-size:.7rem;color:var(--dim);padding:6px 14px;border:1px solid var(--border);border-radius:6px;transition:color .3s,border-color .3s}
-.project-links a:hover{color:var(--cyan);border-color:var(--cyan)}
-
-/* CONTACT */
-.contact-wrap{text-align:center}
-.contact-title{font-size:clamp(2rem,5vw,4rem);font-weight:700;line-height:1;margin-bottom:16px}
-.contact-title span{background:linear-gradient(90deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.contact-sub{font-size:.85rem;color:var(--dim);margin-bottom:40px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.7}
-.contact-email{display:inline-flex;align-items:center;gap:10px;font-size:clamp(.85rem,2vw,1.2rem);font-weight:700;color:var(--cyan);padding:14px 32px;border:1.5px solid rgba(6,182,212,.2);border-radius:12px;transition:background .3s,border-color .3s,transform .2s}
-.contact-email:hover{background:rgba(6,182,212,.08);border-color:var(--cyan);transform:translateY(-2px)}
-.social-row{display:flex;justify-content:center;gap:16px;margin-top:32px}
-.social-btn{width:48px;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--card);display:grid;place-items:center;transition:border-color .3s,transform .3s,background .3s}
-.social-btn:hover{border-color:var(--purple);transform:translateY(-3px);background:rgba(124,58,237,.08)}
-.social-btn svg{width:20px;height:20px;fill:var(--dim);transition:fill .3s}
-.social-btn:hover svg{fill:var(--purple)}
-
-/* FOOTER */
-footer{position:relative;z-index:1;text-align:center;padding:40px 20px;font-size:.65rem;color:var(--dim);border-top:1px solid var(--border)}
-footer span{color:var(--purple)}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  .section{padding:80px 6vw}
-  .hero{padding:0 6vw}
-  .about-grid{grid-template-columns:1fr}
-  .projects-grid{grid-template-columns:1fr}
-  nav{padding:16px 20px}
-  .nav-links{gap:16px}
-  .nav-links a{font-size:.65rem}
-  #cursor,#cursorRing{display:none}
-  body{cursor:auto}
-}
-@media(max-width:480px){
-  .hero-cta{flex-direction:column}
-  .btn{width:100%;justify-content:center}
-}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Zayd Souili - Software Engineer</title>
+  <meta name="description" content="Zayd Souili - Etudiant en Ingenierie Logicielle at ESISA. Modern developer portfolio."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./index.css"/>
 </head>
 <body>
-
-<div id="cursor"></div>
-<div id="cursorRing"></div>
-<canvas id="bgCanvas"></canvas>
-
-<!-- NAV -->
-<nav id="nav">
-  <div class="nav-logo">&lt;ZS/&gt;</div>
-  <div class="nav-links">
-    <a href="#about">About</a>
-    <a href="#skills">Skills</a>
-    <a href="#projects">Projects</a>
-    <a href="#contact">Contact</a>
+  <div class="page-loader" id="pageLoader" aria-hidden="true">
+    <div class="loader-mark">&lt;ZS/&gt;</div>
   </div>
-</nav>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="ambient" aria-hidden="true"></div>
 
-<!-- HERO -->
-<section class="hero" id="hero">
-  <div class="hero-title reveal">
-    <div class="hero-line1">Zayd</div>
-    <div class="hero-line2">Souili</div>
-    <div class="hero-line3">Software Engineer.</div>
-  </div>
-<p class="hero-sub reveal rd1">Etudiant en Ingenierie Logicielle at ESISA - building full-stack web applications and exploring the boundaries of interactive design.</p>
-  <div class="hero-cta reveal rd2">
-    <a href="#projects" class="btn btn-primary">View Projects</a>
-    <a href="#contact" class="btn btn-outline">Get In Touch</a>
-  </div>
-</section>
+  <header class="site-header" id="nav">
+    <a class="nav-logo" href="#hero">&lt;ZS/&gt;</a>
+    <nav class="nav-links">
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+      <a href="#showcase">UI Showcase</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark and light theme">Light</button>
+  </header>
 
-<!-- ABOUT -->
-<section class="section" id="about">
-  <div class="section-label reveal">About</div>
-  <h2 class="section-title reveal rd1">A bit about me.</h2>
-  <div class="about-grid">
-    <div>
-<p class="about-text reveal rd2">I'm <strong>Zayd Souili</strong>, a 20-year-old <strong>Software Engineering student</strong> at <strong>ESISA</strong> (Ecole Superieure d'Ingenierie en Sciences Appliquees). I specialize in full-stack web development with the JavaScript ecosystem - React, Next.js, and Node.js on the backend.</p>
-      <br/>
-      <p class="about-text reveal rd3">I believe in building software that is both <strong>functional and beautiful</strong>. From architecting database schemas to crafting pixel-perfect interfaces, I enjoy every layer of the stack. Currently seeking internship and collaboration opportunities.</p>
-      <div class="about-info reveal rd4">
-        <span class="about-tag">Morocco</span>
-        <span class="about-tag">ESISA - Class of 2029</span>
-        <span class="about-tag">EN / FR / ES</span>
-        <span class="about-tag">Full-Stack</span>
+  <main>
+    <section class="hero" id="hero">
+      <div class="hero-layout">
+        <div class="hero-content">
+          <p class="hero-kicker reveal">Software Engineering Student</p>
+          <h1 class="hero-title reveal rd1">Zayd Souili</h1>
+          <p class="hero-role reveal rd2">I build elegant products with production-ready code.</p>
+          <p class="typing-line reveal rd3">
+            <span class="typing-prefix">Focus:</span>
+            <span id="typingText" aria-live="polite"></span>
+            <span class="typing-caret" aria-hidden="true">|</span>
+          </p>
+          <p class="hero-sub reveal rd4">Etudiant en Ingenierie Logicielle at ESISA - building full-stack web applications and exploring the boundaries of interactive design.</p>
+          <div class="hero-cta reveal rd4">
+            <a href="#projects" class="btn btn-primary">View Projects</a>
+            <a href="#contact" class="btn btn-ghost">Hire Me</a>
+          </div>
+        </div>
+        <figure class="hero-photo-wrap reveal rd2" id="heroPhotoWrap">
+          <img src="./img/WhatsApp Image 2026-03-13 at 21.23.39 (1).jpeg" alt="Portrait of Zayd Souili" class="hero-photo" id="heroPhoto"/>
+        </figure>
       </div>
-    </div>
-    <div class="about-3d-wrap reveal rd2">
-      <canvas id="aboutCanvas"></canvas>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- SKILLS -->
-<section class="section" id="skills">
-  <div class="section-label reveal">Skills</div>
-  <h2 class="section-title reveal rd1">Technologies I work with.</h2>
-
-  <div style="margin-bottom:28px">
-    <div class="section-label reveal rd2" style="margin-bottom:10px;color:var(--cyan)">Languages</div>
-    <div class="skills-grid reveal rd2">
-      <span class="skill-pill">JavaScript</span>
-      <span class="skill-pill">Python</span>
-      <span class="skill-pill">Java</span>
-      <span class="skill-pill">C</span>
-      <span class="skill-pill">C++</span>
-      <span class="skill-pill">HTML</span>
-      <span class="skill-pill">CSS</span>
-      <span class="skill-pill">SQL</span>
-    </div>
-  </div>
-  <div>
-    <div class="section-label reveal rd3" style="margin-bottom:10px;color:var(--amber)">Frameworks & Tools</div>
-    <div class="skills-grid reveal rd3">
-      <span class="skill-pill">Next.js</span>
-      <span class="skill-pill">Node.js</span>
-      <span class="skill-pill">React</span>
-      <span class="skill-pill">Git</span>
-      <span class="skill-pill">Linux</span>
-      <span class="skill-pill">Vercel</span>
-    </div>
-  </div>
-</section>
-
-<!-- PROJECTS -->
-<section class="section" id="projects">
-  <div class="section-label reveal">Projects</div>
-  <h2 class="section-title reveal rd1">Things I've built.</h2>
-  <div class="projects-grid">
-
-    <div class="project-card reveal rd1">
-      <div class="project-num">Project 01</div>
-      <h3 class="project-name">ESISA Student Management</h3>
-      <p class="project-desc">A full-stack web platform to manage students, grades, and enrollment at ESISA school. Features role-based dashboards, real-time analytics, and a modern UI.</p>
-      <div class="project-stack">
-        <span>Next.js</span><span>Node.js</span><span>JavaScript</span><span>Vercel</span>
+    <section class="section" id="about">
+      <p class="section-label reveal">About</p>
+      <h2 class="section-title reveal rd1">A bit about me.</h2>
+      <div class="about-grid">
+        <div class="glass-card reveal rd2">
+          <p class="about-text">I'm <strong>Zayd Souili</strong>, a 20-year-old <strong>Software Engineering student</strong> at <strong>ESISA</strong> (Ecole Superieure d'Ingenierie en Sciences Appliquees). I specialize in full-stack web development with the JavaScript ecosystem - React, Next.js, and Node.js on the backend.</p>
+          <p class="about-text">I believe in building software that is both <strong>functional and beautiful</strong>. From architecting database schemas to crafting pixel-perfect interfaces, I enjoy every layer of the stack. Currently seeking internship and collaboration opportunities.</p>
+          <div class="about-tags">
+            <span>Morocco</span>
+            <span>ESISA - Class of 2029</span>
+            <span>EN / FR / ES</span>
+            <span>Full-Stack</span>
+          </div>
+        </div>
+        <div class="about-highlight glass-card reveal rd3">
+          <h3>Developer Snapshot</h3>
+          <ul>
+            <li>Code quality and maintainability first</li>
+            <li>Strong focus on clean UI and UX</li>
+            <li>Building web and mobile experiences</li>
+          </ul>
+        </div>
       </div>
-      <div class="project-links">
-        <a href="https://github.com/zsouili" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://esisa-studentmanagment.vercel.app" target="_blank" rel="noopener">Live -></a>
+    </section>
+
+    <section class="section" id="skills">
+      <p class="section-label reveal">Skills</p>
+      <h2 class="section-title reveal rd1">Technologies I work with.</h2>
+      <div class="skills-grid">
+        <article class="skill-card glass-card reveal rd1">
+          <h3><span aria-hidden="true">{ }</span> Frontend</h3>
+          <p>HTML, CSS, JavaScript, React</p>
+        </article>
+        <article class="skill-card glass-card reveal rd2">
+          <h3><span aria-hidden="true">#</span> Mobile</h3>
+          <p>Flutter, React Native</p>
+        </article>
+        <article class="skill-card glass-card reveal rd3">
+          <h3><span aria-hidden="true">&lt;/&gt;</span> Backend</h3>
+          <p>Laravel, Node.js</p>
+        </article>
+        <article class="skill-card glass-card reveal rd4">
+          <h3><span aria-hidden="true">[]</span> Database</h3>
+          <p>MongoDB, MySQL</p>
+        </article>
       </div>
-    </div>
-
-    <div class="project-card reveal rd2">
-      <div class="project-num">Project 02</div>
-      <h3 class="project-name">Portfolio Website</h3>
-      <p class="project-desc">This interactive 3D portfolio - featuring a full Three.js particle system, wireframe geometries, mouse-parallax camera, and custom drag-to-rotate 3D scene.</p>
-      <div class="project-stack">
-        <span>HTML</span><span>CSS</span><span>JavaScript</span><span>Three.js</span>
+      <div class="legacy-skill-chips reveal rd4" aria-label="Additional technologies and tools">
+        <span>Python</span>
+        <span>Java</span>
+        <span>C</span>
+        <span>C++</span>
+        <span>SQL</span>
+        <span>Next.js</span>
+        <span>Git</span>
+        <span>Linux</span>
+        <span>Vercel</span>
       </div>
-      <div class="project-links">
-        <a href="https://github.com/zsouili/portfolio-web" target="_blank" rel="noopener">GitHub</a>
+    </section>
+
+    <section class="section" id="projects">
+      <p class="section-label reveal">Projects</p>
+      <h2 class="section-title reveal rd1">Things I've built.</h2>
+      <div class="projects-grid">
+        <article class="project-card glass-card reveal rd1">
+          <div class="project-shot" aria-label="Screenshot preview for ESISA Student Management">
+            <div class="shot-bar"></div>
+            <div class="shot-screen"></div>
+          </div>
+          <h3>ESISA Student Management</h3>
+          <p>A full-stack web platform to manage students, grades, and enrollment at ESISA school. Features role-based dashboards, real-time analytics, and a modern UI.</p>
+          <div class="project-stack">
+            <span>Next.js</span>
+            <span>Node.js</span>
+            <span>JavaScript</span>
+            <span>Vercel</span>
+          </div>
+          <div class="project-links">
+            <a href="https://esisa-studentmanagment.vercel.app" target="_blank" rel="noopener" class="btn btn-small btn-primary">Live Demo</a>
+            <a href="https://github.com/zsouili" target="_blank" rel="noopener" class="btn btn-small btn-ghost">GitHub</a>
+          </div>
+        </article>
+
+        <article class="project-card glass-card reveal rd2">
+          <div class="project-shot" aria-label="Screenshot preview for Portfolio Website">
+            <div class="shot-bar"></div>
+            <div class="shot-screen alt"></div>
+          </div>
+          <h3>Portfolio Website</h3>
+          <p>This interactive 3D portfolio - featuring a full Three.js particle system, wireframe geometries, mouse-parallax camera, and custom drag-to-rotate 3D scene.</p>
+          <div class="project-stack">
+            <span>HTML</span>
+            <span>CSS</span>
+            <span>JavaScript</span>
+            <span>Three.js</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/zsouili/portfolio-web" target="_blank" rel="noopener" class="btn btn-small btn-ghost">GitHub</a>
+          </div>
+        </article>
       </div>
-    </div>
+    </section>
 
+    <section class="section" id="github">
+      <p class="section-label reveal">GitHub</p>
+      <h2 class="section-title reveal rd1">Open source activity.</h2>
+      <div class="github-grid">
+        <article class="glass-card reveal rd2">
+          <h3>Stats</h3>
+          <img src="https://github-readme-stats.vercel.app/api?username=zsouili&show_icons=true&theme=transparent&hide_border=true&title_color=6ee7ff&text_color=d9e7ff&icon_color=6ee7ff" alt="GitHub stats for Zayd Souili" loading="lazy"/>
+        </article>
+        <article class="glass-card reveal rd3">
+          <h3>Top Languages</h3>
+          <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=zsouili&layout=compact&theme=transparent&hide_border=true&title_color=6ee7ff&text_color=d9e7ff" alt="Top languages used by Zayd Souili" loading="lazy"/>
+          <div class="repo-links">
+            <a href="https://github.com/zsouili/portfolio-web" target="_blank" rel="noopener">portfolio-web</a>
+            <a href="https://github.com/zsouili" target="_blank" rel="noopener">View all repositories</a>
+          </div>
+        </article>
+      </div>
+    </section>
 
+    <section class="section" id="showcase">
+      <p class="section-label reveal">UI Showcase</p>
+      <h2 class="section-title reveal rd1">Visual snippets.</h2>
+      <div class="showcase-grid">
+        <figure class="showcase-card glass-card reveal rd1"><div class="showcase-shot"></div><figcaption>Dashboard concept</figcaption></figure>
+        <figure class="showcase-card glass-card reveal rd2"><div class="showcase-shot"></div><figcaption>Mobile app flow</figcaption></figure>
+        <figure class="showcase-card glass-card reveal rd3"><div class="showcase-shot"></div><figcaption>Landing page variant</figcaption></figure>
+        <figure class="showcase-card glass-card reveal rd4"><div class="showcase-shot"></div><figcaption>Analytics widget set</figcaption></figure>
+      </div>
+    </section>
 
-  </div>
-</section>
+    <section class="section" id="contact">
+      <p class="section-label reveal">Contact</p>
+      <h2 class="section-title reveal rd1">Let's connect.</h2>
+      <div class="contact-grid">
+        <div class="glass-card reveal rd2">
+          <p>I'm always open to new opportunities, internships, and interesting collaborations. Drop me a line - I'd love to hear from you.</p>
+          <div class="contact-links">
+            <a href="mailto:z.souili@esisa.ac.ma">z.souili@esisa.ac.ma</a>
+            <a href="https://www.linkedin.com/in/zayd-souili-8a5b97395/" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="https://github.com/zsouili" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <form class="contact-form glass-card reveal rd3">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" placeholder="Your name" required/>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="your@email.com" required/>
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="4" placeholder="Tell me about your project" required></textarea>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+      </div>
+    </section>
+  </main>
 
-<!-- CONTACT -->
-<section class="section" id="contact">
-  <div class="contact-wrap">
-    <div class="section-label reveal" style="justify-content:center">Contact</div>
-    <h2 class="contact-title reveal rd1">Let's <span>connect.</span></h2>
-    <p class="contact-sub reveal rd2">I'm always open to new opportunities, internships, and interesting collaborations. Drop me a line - I'd love to hear from you.</p>
-    <a href="mailto:z.souili@esisa.ac.ma" class="contact-email reveal rd3">
-      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
-      z.souili@esisa.ac.ma
-    </a>
-    <div class="social-row reveal rd4">
-      <a href="https://github.com/zsouili" target="_blank" rel="noopener" class="social-btn" aria-label="GitHub">
-        <svg viewBox="0 0 24 24"><path d="M12 .3a12 12 0 00-3.8 23.38c.6.11.82-.26.82-.58v-2.16c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 00-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 011.84 1.24 2.56 2.56 0 003.5 1 2.56 2.56 0 01.76-1.6c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 011.24-3.22 4.3 4.3 0 01.12-3.18s1-.33 3.3 1.23a11.38 11.38 0 016 0c2.3-1.56 3.3-1.23 3.3-1.23a4.3 4.3 0 01.12 3.18 4.64 4.64 0 011.24 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 01.82 2.22v3.29c0 .32.22.7.82.58A12 12 0 0012 .3"/></svg>
-      </a>
-      <a href="https://www.linkedin.com/in/zayd-souili-8a5b97395/" target="_blank" rel="noopener" class="social-btn" aria-label="LinkedIn">
-        <svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04s-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05a3.74 3.74 0 013.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 11-.01-4.13 2.06 2.06 0 01.01 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77A1.75 1.75 0 000 1.73v20.54A1.75 1.75 0 001.77 24h20.45A1.76 1.76 0 0024 22.27V1.73A1.76 1.76 0 0022.22 0z"/></svg>
-      </a>
-    </div>
-  </div>
-</section>
+  <footer>
+    <p>Designed and built by <span>Zayd Souili</span> - 2026</p>
+  </footer>
 
-<footer>Designed &amp; Built by <span>Zayd Souili</span> &copy; 2026</footer>
+  <script>
+    (function(){
+      'use strict';
 
-<script>
-(function(){
-'use strict';
+      const body = document.body;
+      const nav = document.getElementById('nav');
+      const themeToggle = document.getElementById('themeToggle');
+      const progress = document.getElementById('scrollProgress');
+      const loader = document.getElementById('pageLoader');
+      const typingTarget = document.getElementById('typingText');
+      const contactForm = document.querySelector('.contact-form');
+      const heroPhoto = document.getElementById('heroPhoto');
+      const heroPhotoWrap = document.getElementById('heroPhotoWrap');
 
-/* ========== CUSTOM CURSOR ========== */
-const cur=document.getElementById('cursor'), ring=document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
-(function cLoop(){
-  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
-  cur.style.left=mx+'px'; cur.style.top=my+'px';
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(cLoop);
-})();
-document.querySelectorAll('a,button,.btn,.skill-pill,.project-card,.social-btn').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{cur.classList.add('hover');ring.classList.add('hover')});
-  el.addEventListener('mouseleave',()=>{cur.classList.remove('hover');ring.classList.remove('hover')});
-});
+      const savedTheme = localStorage.getItem('theme');
+      if(savedTheme === 'light') {
+        body.classList.add('light-theme');
+        themeToggle.textContent = 'Dark';
+      }
 
-/* ========== NAV HIDE/SHOW ========== */
-let lastY=0;
-const nav=document.getElementById('nav');
-window.addEventListener('scroll',()=>{
-  const y=window.scrollY;
-  nav.classList.toggle('hidden',y>lastY&&y>80);
-  lastY=y;
-},{passive:true});
+      themeToggle.addEventListener('click', () => {
+        body.classList.toggle('light-theme');
+        const isLight = body.classList.contains('light-theme');
+        themeToggle.textContent = isLight ? 'Dark' : 'Light';
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      });
 
-/* ========== SCROLL REVEAL ========== */
-const rEls=document.querySelectorAll('.reveal');
-const rObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');rObs.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -30px 0px'});
-rEls.forEach(el=>rObs.observe(el));
+      window.addEventListener('load', () => {
+        setTimeout(() => loader.classList.add('hidden'), 450);
+      });
 
-/* ========== THREE.JS — BACKGROUND ========== */
-const bgCanvas=document.getElementById('bgCanvas');
-const bgScene=new THREE.Scene();
-const bgCam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,1000);
-bgCam.position.z=5;
-const bgRenderer=new THREE.WebGLRenderer({canvas:bgCanvas,alpha:true,antialias:true});
-bgRenderer.setSize(innerWidth,innerHeight);
-bgRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
+      let lastY = 0;
+      window.addEventListener('scroll', () => {
+        const y = window.scrollY;
+        nav.classList.toggle('is-hidden', y > lastY && y > 80);
+        lastY = y;
 
-// Particles — 2000
-const pCount=2000;
-const pGeo=new THREE.BufferGeometry();
-const pos=new Float32Array(pCount*3);
-const col=new Float32Array(pCount*3);
-const colors=[new THREE.Color(0x7c3aed),new THREE.Color(0x06b6d4),new THREE.Color(0xf59e0b)];
-for(let i=0;i<pCount;i++){
-  pos[i*3]=(Math.random()-.5)*20;
-  pos[i*3+1]=(Math.random()-.5)*20;
-  pos[i*3+2]=(Math.random()-.5)*20;
-  const c=colors[Math.floor(Math.random()*3)];
-  col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
-}
-pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-pGeo.setAttribute('color',new THREE.BufferAttribute(col,3));
-const pMat=new THREE.PointsMaterial({size:.025,vertexColors:true,transparent:true,opacity:.7,sizeAttenuation:true});
-const particles=new THREE.Points(pGeo,pMat);
-bgScene.add(particles);
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = total > 0 ? (y / total) * 100 : 0;
+        progress.style.width = pct + '%';
+      }, {passive: true});
 
-// Wireframe shapes
-const wireMat=new THREE.MeshBasicMaterial({color:0x7c3aed,wireframe:true,transparent:true,opacity:.12});
-const wireMat2=new THREE.MeshBasicMaterial({color:0x06b6d4,wireframe:true,transparent:true,opacity:.1});
-const wireMat3=new THREE.MeshBasicMaterial({color:0xf59e0b,wireframe:true,transparent:true,opacity:.08});
-const ico=new THREE.Mesh(new THREE.IcosahedronGeometry(1.2,1),wireMat);
-ico.position.set(-3,1,-2);
-const octa=new THREE.Mesh(new THREE.OctahedronGeometry(.9,0),wireMat2);
-octa.position.set(3,-1,-1);
-const tetra=new THREE.Mesh(new THREE.TetrahedronGeometry(.7,0),wireMat3);
-tetra.position.set(0,-2.5,-3);
-bgScene.add(ico,octa,tetra);
+      const revealElements = document.querySelectorAll('.reveal');
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if(entry.isIntersecting) {
+            entry.target.classList.add('vis');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, {threshold: 0.15, rootMargin: '0px 0px -50px 0px'});
 
-// Mouse parallax
-let mxN=0,myN=0;
-document.addEventListener('mousemove',e=>{
-  mxN=(e.clientX/innerWidth-.5)*2;
-  myN=(e.clientY/innerHeight-.5)*2;
-});
+      revealElements.forEach((element) => revealObserver.observe(element));
 
-function bgAnimate(t){
-  requestAnimationFrame(bgAnimate);
-  const s=t*.001;
-  particles.rotation.y=s*.05;
-  particles.rotation.x=s*.02;
-  // Float particles
-  const p=pGeo.attributes.position.array;
-  for(let i=0;i<pCount;i++){
-    p[i*3+1]+=Math.sin(s+i*.1)*.0003;
-  }
-  pGeo.attributes.position.needsUpdate=true;
-  ico.rotation.x=s*.3; ico.rotation.y=s*.2;
-  octa.rotation.x=s*.25; octa.rotation.z=s*.15;
-  tetra.rotation.y=s*.35; tetra.rotation.z=s*.2;
-  // Camera parallax
-  bgCam.position.x+=(.5*mxN-bgCam.position.x)*.02;
-  bgCam.position.y+=(-.5*myN-bgCam.position.y)*.02;
-  bgCam.lookAt(0,0,0);
-  bgRenderer.render(bgScene,bgCam);
-}
-requestAnimationFrame(bgAnimate);
+      const words = ['Mobile Developer', 'Web Developer', 'Problem Solver'];
+      let wordIndex = 0;
+      let charIndex = 0;
+      let deleting = false;
 
-window.addEventListener('resize',()=>{
-  bgCam.aspect=innerWidth/innerHeight;
-  bgCam.updateProjectionMatrix();
-  bgRenderer.setSize(innerWidth,innerHeight);
-});
+      function typeLoop(){
+        const currentWord = words[wordIndex];
+        if(!deleting) {
+          charIndex += 1;
+          typingTarget.textContent = currentWord.slice(0, charIndex);
+          if(charIndex === currentWord.length) {
+            deleting = true;
+            setTimeout(typeLoop, 1400);
+            return;
+          }
+        } else {
+          charIndex -= 1;
+          typingTarget.textContent = currentWord.slice(0, charIndex);
+          if(charIndex === 0) {
+            deleting = false;
+            wordIndex = (wordIndex + 1) % words.length;
+          }
+        }
+        setTimeout(typeLoop, deleting ? 40 : 95);
+      }
+      typeLoop();
 
-/* ========== THREE.JS — ABOUT MINI SCENE ========== */
-const aboutCanvas=document.getElementById('aboutCanvas');
-const aScene=new THREE.Scene();
-const aCam=new THREE.PerspectiveCamera(50,1,.1,100);
-aCam.position.z=4;
-const aRenderer=new THREE.WebGLRenderer({canvas:aboutCanvas,alpha:true,antialias:true});
+      contactForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const message = document.getElementById('message').value.trim();
+        const subject = encodeURIComponent('Portfolio Contact - ' + name);
+        const bodyText = encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\n\nMessage:\n' + message);
+        window.location.href = 'mailto:z.souili@esisa.ac.ma?subject=' + subject + '&body=' + bodyText;
+      });
 
-function resizeAbout(){
-  const w=aboutCanvas.parentElement.clientWidth;
-  const h=aboutCanvas.parentElement.clientHeight;
-  aRenderer.setSize(w,h);
-  aRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  aCam.aspect=w/h;
-  aCam.updateProjectionMatrix();
-}
-resizeAbout();
-window.addEventListener('resize',resizeAbout);
+      const photoCandidates = [
+        './img/WhatsApp Image 2026-03-13 at 21.23.39 (1).jpeg',
+        './img/profile.png',
+        './img/Gemini_Generated_Image_spu30kspu30kspu3 (2).png',
+        './zayd-photo.jpg',
+        './zayd-photo.jpeg',
+        './zayd-photo.png',
+        './zayd.jpg',
+        './zayd.jpeg',
+        './zayd.png',
+        './photo.jpg',
+        './photo.jpeg',
+        './photo.png',
+        './frontend/zayd-photo.jpg',
+        './frontend/zayd-photo.jpeg',
+        './frontend/zayd-photo.png',
+        'https://avatars.githubusercontent.com/zsouili?v=4'
+      ];
+      let photoCandidateIndex = photoCandidates.indexOf(heroPhoto.getAttribute('src'));
 
-// Nested wireframe boxes
-const boxMats=[
-  new THREE.MeshBasicMaterial({color:0x7c3aed,wireframe:true,transparent:true,opacity:.35}),
-  new THREE.MeshBasicMaterial({color:0x06b6d4,wireframe:true,transparent:true,opacity:.25}),
-  new THREE.MeshBasicMaterial({color:0xf59e0b,wireframe:true,transparent:true,opacity:.2})
-];
-const boxGroup=new THREE.Group();
-[1.4,1,.6].forEach((s,i)=>{
-  const m=new THREE.Mesh(new THREE.BoxGeometry(s,s,s),boxMats[i]);
-  boxGroup.add(m);
-});
-aScene.add(boxGroup);
+      function applyMissingPhotoState() {
+        heroPhotoWrap.classList.add('is-missing');
+      }
 
-// Orbiting sphere
-const orb=new THREE.Mesh(
-  new THREE.SphereGeometry(.08,16,16),
-  new THREE.MeshBasicMaterial({color:0x06b6d4})
-);
-aScene.add(orb);
+      function clearMissingPhotoState() {
+        heroPhotoWrap.classList.remove('is-missing');
+      }
 
-// Drag rotation
-let isDrag=false,prevX=0,prevY=0,rotX=0,rotY=0,velX=0,velY=0;
-aboutCanvas.addEventListener('pointerdown',e=>{isDrag=true;prevX=e.clientX;prevY=e.clientY;velX=0;velY=0});
-window.addEventListener('pointerup',()=>{isDrag=false});
-window.addEventListener('pointermove',e=>{
-  if(!isDrag)return;
-  const dx=e.clientX-prevX, dy=e.clientY-prevY;
-  velX=dx*.008; velY=dy*.008;
-  prevX=e.clientX; prevY=e.clientY;
-});
+      function tryNextPhotoSource() {
+        photoCandidateIndex += 1;
+        if(photoCandidateIndex >= photoCandidates.length) {
+          applyMissingPhotoState();
+          return;
+        }
+        heroPhoto.src = photoCandidates[photoCandidateIndex];
+      }
 
-function aAnimate(t){
-  requestAnimationFrame(aAnimate);
-  const s=t*.001;
-  if(!isDrag){velX*=.96;velY*=.96}
-  rotY+=velX; rotX+=velY;
-  boxGroup.rotation.x=rotX;
-  boxGroup.rotation.y=rotY;
-  // Gentle auto-rotate when idle
-  if(Math.abs(velX)<.001&&Math.abs(velY)<.001){
-    boxGroup.rotation.y+=.003;
-    boxGroup.rotation.x+=.001;
-  }
-  // Orbiting sphere
-  orb.position.x=Math.cos(s*1.2)*1.6;
-  orb.position.y=Math.sin(s*1.5)*.8;
-  orb.position.z=Math.sin(s*1.2)*1.6;
-  aRenderer.render(aScene,aCam);
-}
-requestAnimationFrame(aAnimate);
+      heroPhoto.addEventListener('error', tryNextPhotoSource);
+      heroPhoto.addEventListener('load', clearMissingPhotoState);
 
-})();
-</script>
+      if(heroPhoto.complete && heroPhoto.naturalWidth === 0) {
+        tryNextPhotoSource();
+      }
+    })();
+  </script>
 </body>
 </html>
